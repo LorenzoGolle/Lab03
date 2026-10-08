@@ -1,8 +1,7 @@
-from asyncio import exceptions
-
 from strumento import Strumento
 from operator import attrgetter
 from prestito import Prestito
+
 class DepositoStrumenti:
 
     elenco_strumenti = []
@@ -59,12 +58,15 @@ class DepositoStrumenti:
             if id_strumento == prestito.id_strumento:
                 raise Exception('Lo strumento è già stato prestato')
 
+        codici_esistenti = []                       #controllo i codici già usati
+        for prestito in self.elenco_prestiti:
+            codici_esistenti.append(prestito.codice)
+
         i = 1
         codice = 'P' + str(i)
-        for prestito in self.elenco_prestiti:       #aggiorno il codice
-            if prestito.codice == codice:
-                i+=1
-                codice = 'P' + str(i)
+        while codice in codici_esistenti:           #aggiorno il codice
+            i+=1
+            codice = 'P' + str(i)
 
         p = Prestito(codice, data, id_strumento, cognome_allievo)
         self.elenco_prestiti.append(p)
@@ -73,6 +75,10 @@ class DepositoStrumenti:
 
     def termina_prestito(self, id_prestito):
         """Termina un prestito in atto"""
+        trovato = False
         for prestito in self.elenco_prestiti:
             if prestito.codice == id_prestito:
+                trovato = True
                 self.elenco_prestiti.remove(prestito)
+        if not trovato:
+            raise Exception('Il prestito non esiste')
